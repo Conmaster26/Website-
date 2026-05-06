@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodZone Ivy Park</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI;}
+body{background:#f4f6f8}
+
+/* HEADER */
+header{
+background:linear-gradient(135deg,#16a34a,#22c55e);
+color:white;text-align:center;padding:25px;
+}
+
+/* PRODUCTS */
+.container{padding:20px}
+
+.products{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+}
+
+.card{
+background:white;padding:15px;border-radius:10px;
+text-align:center;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+.card img{width:100%;border-radius:10px}
+
+button{
+margin-top:5px;
+padding:8px;
+border:none;
+background:#16a34a;
+color:white;
+border-radius:5px;
+}
+
+/* CART */
+.cart{
+position:fixed;
+right:0;
+top:0;
+width:340px;
+height:100%;
+background:white;
+padding:15px;
+box-shadow:-3px 0 10px rgba(0,0,0,0.2);
+overflow:auto;
+}
+
+.cart-item{
+display:flex;
+justify-content:space-between;
+margin:8px 0;
+}
+
+/* FLOAT BUTTON */
+.cart-btn{
+position:fixed;
+bottom:20px;
+right:20px;
+background:#111827;
+color:white;
+padding:14px;
+border-radius:50px;
+cursor:pointer;
+z-index:100;
+}
+
+/* INPUTS */
+input{
+width:100%;
+padding:8px;
+margin:5px 0;
+border:1px solid #ccc;
+border-radius:5px;
+}
+
+/* MAP */
+iframe{
+width:100%;
+height:220px;
+border:0;
+border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- 🔊 SOUND SYSTEM -->
+<audio id="addSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg"></audio>
+<audio id="orderSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+
+<header>
+<h2>FoodZone Ivy Park</h2>
+<p>Order • Collect • Pay on Pickup</p>
+</header>
+
+<!-- PRODUCTS -->
+<div class="container">
+<h3>Products</h3>
+
+<div class="products">
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1608198093002-ad4e005484ec">
+<h3>Bread</h3>
+<p>R15.99 | Stock: <span id="breadStock">5</span></p>
+<button onclick="add('Bread',15.99)">Add</button>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1585238342028-4d5f8c8f9a3b">
+<h3>Milk</h3>
+<p>R18.99 | Stock: <span id="milkStock">3</span></p>
+<button onclick="add('Milk',18.99)">Add</button>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1604908176997-431e4c1c9a8f">
+<h3>Eggs</h3>
+<p>R45.00 | Stock: <span id="eggStock">4</span></p>
+<button onclick="add('Eggs',45)">Add</button>
+</div>
+
+</div>
+</div>
+
+<!-- MAP -->
+<div class="container">
+<h3>Location</h3>
+<iframe src="https://www.google.com/maps?q=-23.9047,29.4688&z=17&output=embed"></iframe>
+</div>
+
+<!-- CART BUTTON -->
+<div class="cart-btn" onclick="toggleCart()">🛒 Cart</div>
+
+<!-- CART -->
+<div class="cart" id="cart">
+
+<h3>Your Cart</h3>
+
+<input id="name" placeholder="Name">
+<input id="phone" placeholder="Phone">
+<input type="time" id="time">
+
+<div id="items"></div>
+
+<p><b>Total: R<span id="total">0</span></b></p>
+
+<button onclick="checkout()">Send WhatsApp Order</button>
+
+</div>
+
+<script>
+
+let cart = {};
+let stock = {
+Bread:5,
+Milk:3,
+Eggs:4
+};
+
+/* 🔊 ADD TO CART WITH SOUND */
+function add(item, price){
+
+document.getElementById("addSound").play(); // SOUND
+
+if(stock[item] <= 0){
+alert("Out of stock");
+return;
+}
+
+if(cart[item]){
+cart[item].qty++;
+}else{
+cart[item]={price:price, qty:1};
+}
+
+stock[item]--;
+updateStock();
+render();
+}
+
+/* STOCK UI */
+function updateStock(){
+document.getElementById("breadStock").innerText = stock.Bread;
+document.getElementById("milkStock").innerText = stock.Milk;
+document.getElementById("eggStock").innerText = stock.Eggs;
+}
+
+/* CART RENDER */
+function render(){
+
+let box=document.getElementById("items");
+box.innerHTML="";
+let total=0;
+
+for(let i in cart){
+let t=cart[i].price*cart[i].qty;
+total+=t;
+
+box.innerHTML+=`
+<div class="cart-item">
+<span>${i} x${cart[i].qty}</span>
+</div>
+`;
+}
+
+document.getElementById("total").innerText=total.toFixed(2);
+}
+
+/* TOGGLE CART */
+function toggleCart(){
+document.getElementById("cart").style.display =
+document.getElementById("cart").style.display==="none"?"block":"block";
+}
+
+/* 🔊 CHECKOUT WITH SOUND */
+function checkout(){
+
+document.getElementById("orderSound").play(); // SOUND
+
+let name=document.getElementById("name").value;
+let phone=document.getElementById("phone").value;
+let time=document.getElementById("time").value;
+
+if(!name||!phone){
+alert("Fill details");
+return;
+}
+
+let msg="🧾 FoodZone Order%0A";
+msg+="Name: "+name+"%0A";
+msg+="Phone: "+phone+"%0A%0A";
+
+let total=0;
+
+for(let i in cart){
+let t=cart[i].price*cart[i].qty;
+total+=t;
+msg+=i+" x"+cart[i].qty+" - R"+t+"%0A";
+}
+
+msg+="%0ATotal: R"+total.toFixed(2);
+msg+="%0APickup: "+time;
+msg+="%0APay on Collection";
+
+window.open("https://wa.me/27665647535?text="+msg);
+
+cart={};
+render();
+}
+
+updateStock();
+
+</script>
+
+</body>
+</html>
